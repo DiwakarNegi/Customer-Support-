@@ -1,18 +1,28 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
-export const pool = mysql.createPool({
-    host : process.env.DB_HOST || 'localhost',
-    user : process.env.DB_USER || 'root',
-    password : process.env.DB_PASSWORD || 'password',
-    database : process.env.DB_NAME || 'support_db',
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
 });
 
-//for the billing tool
-export async function fetchBillingInfo(userId) {
- const [rows] = await pool.query('SELECT * FROM billing WHERE customer_id = ?', 
-    [customerId]
-  );
-  return rows[0];
+export async function getBillingFromDB(customerId) {
+  try {
+    
+    const [rows] = await pool.query(
+      'SELECT status, balance FROM billing WHERE customer_id = ?', 
+      [customerId]
+    );
+    
+    return rows.length > 0 ? rows[0] : null;
+  } catch (error) {
+    console.error("MySQL Database Error:", error);
+    throw error;
+  }
 }

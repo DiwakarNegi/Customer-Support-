@@ -1,21 +1,21 @@
-import {ChatOpenAi} from "@langchain/openai";
-import { createReactAgent } from "@langchain/langgraph";
+import { ChatGroq } from "@langchain/groq";
+import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { MemorySaver } from "@langchain/langgraph";
 import {billingTool,technicalTool} from "./tools.js";
 import { SystemMessage } from "@langchain/core/messages";
 
-//intializing the llm/agent 
-const llm = new ChatOpenAi({
-    modelName: "gpt-4o",
-    temperature: 0.7,
-    openAIApiKey: process.env.OPENAI_API_KEY,
+
+const llm = new ChatGroq({
+  apiKey: process.env.GROQ_API_KEY,
+  model: "llama-3.3-70b-versatile", 
+  temperature: 0,
 });
 
 //remembering user's previous request 
 const checkpointer = new MemorySaver();
 
-//prompt
-const SystemMessage=`
+//promptfilling
+const systemPrompt=`
 You are a Multi-Step Customer Support Assistant.
 - For Billing queries (invoices, payments, balances): Use 'fetchBillingInfo'.
 - For Technical queries (troubleshooting, errors, manuals): Use 'searchTechnicalDocs'.
@@ -26,5 +26,5 @@ export const agent = createReactAgent({
     llm,
     tools: [billingTool, technicalTool],
     checkpointSaver: checkpointer,
-    messagesModifier: systemMessage, 
+    messagesModifier: systemPrompt, 
 });
